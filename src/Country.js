@@ -35,7 +35,7 @@ function Country({
 }) {
     return (
         <CountryStyled>
-            <img src={flag} alt="" />
+            <img loading="lazy" src={flag} alt="" />
             <div className="details">
                 <h2>{name}</h2>
                 <p><strong>Population:</strong> {population}</p>

@@ -1,26 +1,193 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Country from './Country'
+import { useSelector, useDispatch } from 'react-redux'
 
 const CountryListStyled = styled.div`
     display:grid;
-    background: var (--black);
+    grid-row-gap:2.3em;
+    background: var(--background);
+    justify-content: center;
+    padding: 4em 2em;
+    border: 1px solid red;
 `
 
-function CountryList({
-}) {
+function CountryList() {
+
+    const [inputValue, setInputValue] = useState('')
+    const dispatch = useDispatch()
+    const countryListByName = useSelector((state) => state.countryListByName)
+
+    const countryList = useSelector((state) => {
+        if ('' !== state.filterByRegion) {
+            return state.countryFilteredByRegion;
+        }
+        if (countryListByName.length > 0) {
+            return countryListByName
+        }
+
+//     if (countryListByName.length > 0) {
+//       return countryListByName
+//     }
+
+        return state.countryList;
+    })
+    // const [countryList, setCountryList] =useState([])
+    useEffect(() => {
+        fetch('https://restcountries.eu/rest/v2/all')
+            .then((response) => {
+                return response.json()
+            })
+            .then((list) => {
+                dispatch({
+                    type: 'SET_COUNTRY_LIST',
+                    payload: list
+                })
+                // setCountryList(data)
+                console.log(list.length)
+            })
+            .catch(() => {
+                console.log("ERROR")
+            })
+    }, [dispatch])
+
+    const filterByName = (e) => {
+        console.log('WHAT IS E???', e.target.value)
+        setInputValue(e.target.value)
+        dispatch({
+            type: 'SET_COUNTRY_BY_NAME',
+            payload: e.target.value
+        })
+    }
+    const clearInput = () => {
+        dispatch({
+            type: 'SET_COUNTRY_BY_NAME',
+            payload: ''
+        })
+        setInputValue('')
+    }
     return (
         <CountryListStyled>
-            <Country
-                flag="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Flag_of_Peru_%281825-1950%29.svg/220px-Flag_of_Peru_%281825-1950%29.svg.png"
-                name="Peru"
-                population={1234567}
-                region="America"
-                capital="Lima"
-            />
+            <input type="text" value={inputValue} onChange={filterByName} />
+            {
+                inputValue &&
+                <button onClick={clearInput}>X</button>
+            }
+            {
+                countryListByName.length === 0 && inputValue &&
+                <p>
+                    <strong>{inputValue}</strong> Not found in countries
+                </p>
+            }
+
+            {
+                countryList.map(({ name, flag, population, region, capital }) => {
+                    return (
+                        <Country
+                            flag={flag}
+                            name={name}
+                            key={name}
+                            population={population}
+                            region={region}
+                            capital={capital}
+                        />
+                    )
+                })
+            }
         </CountryListStyled>
     )
 }
 
 export default CountryList
 
+// import React, { useEffect, useState } from 'react'
+// import styled from 'styled-components'
+// import Country from './Country'
+// import { useSelector, useDispatch } from 'react-redux'
+// const CountryListStyled = styled.div`
+//   display: grid;
+//   grid-row-gap: 2.3em;
+//   /* grid-template-columns: 1fr 1fr 1fr; */
+//   background: var(--background);
+//   justify-content: center;
+//   border: 1px solid red;
+//   padding: 4em 2em;
+// `
+// function CountryList() {
+//   const [inputValue, setInputValue] = useState('')
+//   const dispatch = useDispatch()
+//   const countryListByName = useSelector((state) => state.countryListByName)
+//   const countryList = useSelector((state) => {
+//     if ('' !== state.filterByRegion) {
+//       return state.coutryFilteredByRegion;
+//     }
+//     if (countryListByName.length > 0) {
+//       return countryListByName
+//     }
+
+//     return state.countryList;
+//   })
+//   console.log('el estado total de mi app es', countryList)
+//   const [countryList, setCountryList] = useState([])
+//   useEffect(() => {
+//     fetch('https://restcountries.eu/rest/v2/all')
+//       .then((response) => {
+//         return response.json()
+//       })
+//       .then((list) => {
+//         dispatch({
+//           type: 'SET_COUNTRY_LIST',
+//           payload: list
+//         })
+//         setCountryList(data)
+//         console.log(list.length)
+//       })
+//       .catch(() => {
+//         console.log('hubo un error, que dolor que dolo que pena')
+//       })
+//   }, [dispatch])
+//   const filterByName = (e) => {
+//     setInputValue(e.target.value)
+//     dispatch({
+//       type: 'SET_COUNTRY_BY_NAME',
+//       payload: e.target.value
+//     })
+//   }
+//   const clearInput = () => {
+//     dispatch({
+//       type: 'SET_COUNTRY_BY_NAME',
+//       payload: ''
+//     })
+//     setInputValue('')
+//   }
+//   return (
+//     <CountryListStyled>
+//       <input type="text" value={inputValue} onChange={filterByName} />
+//       {
+//         inputValue &&
+//         <button onClick={clearInput}>X</button>
+//       }
+//       {
+//         countryListByName.length === 0 && inputValue &&
+//         <p>
+//           <strong>{inputValue}</strong> Not found in countries
+//         </p>
+//       }
+//       {
+//           countryList.map(({ name, flag, population, capital, region, }) => {
+//             return (
+//               <Country
+//                 flag={flag}
+//                 name={name}
+//                 key={name}
+//                 population={population}
+//                 region={region}
+//                 capital={capital}
+//               />
+//             )
+//           })
+//         }
+//       </CountryListStyled>
+//     )
+//   }
+//   export default CountryList
